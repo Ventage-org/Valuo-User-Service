@@ -1,0 +1,33 @@
+spring:
+  application:
+    name: msusuarios
+  datasource:
+    url: jdbc:postgresql://${DB_HOST:localhost}:5432/valuo?currentSchema=schema_usuarios&sslmode=${DB_SSLMODE:prefer}
+    username: ${DB_USER:postgres}
+    password: ${DB_PASSWORD:postgres}
+  jpa:
+    open-in-view: false
+    hibernate:
+      ddl-auto: validate
+    properties:
+      hibernate.default_schema: schema_usuarios
+  flyway:
+    schemas: schema_usuarios
+  servlet:
+    multipart:
+      max-file-size: 2MB
+      max-request-size: 3MB
+
+server:
+  port: 8081
+
+valuo:
+  jwt:
+    # Base64 de al menos 32 bytes. Debe ser el MISMO en msinmuebles y msprediccion.
+    secret: ${JWT_SECRET:dmFsdW8tZGV2LXNlY3JldC1rZXktY2FtYmlhci1lbi1wcm9kdWNjaW9uLTMyYnl0ZXM=}
+    expiracion-ms: 28800000
+  storage:
+    directorio: ${UPLOADS_DIR:./uploads}
+    url-base: ${UPLOADS_URL_BASE:http://localhost:8081/uploads}
+  cors:
+    origins: ${CORS_ORIGINS:http://localhost:4200}
