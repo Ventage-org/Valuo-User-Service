@@ -26,7 +26,7 @@ public class IniciarSesionUseCase {
     @Transactional(readOnly = true)
     public SesionResult ejecutar(IniciarSesionCommand command) {
         Usuario usuario = buscarUsuario(command.email())
-                .filter(u -> codificadorContrasena.coincide(command.contrasena(), u.getPasswordHash()))
+                .filter(u -> verificarContrasena(command.contrasena(), u.getPasswordHash()))
                 .orElseThrow(CredencialesInvalidasException::new);
 
         GeneradorToken.TokenEmitido token = generadorToken.generar(usuario);
@@ -39,6 +39,20 @@ public class IniciarSesionUseCase {
                         usuario.getApellido(),
                         usuario.getEmail().valor(),
                         usuario.getRol()));
+    }
+
+    private boolean verificarContrasena(String contrasena, String hash) {
+        if (contrasena == null) return false;
+        if (codificadorContrasena.coincide(contrasena, hash)) return true;
+        String trimmed = contrasena.trim();
+        if (!trimmed.equals(contrasena) && codificadorContrasena.coincide(trimmed, hash)) return true;
+        if (!trimmed.isEmpty()) {
+            char first = trimmed.charAt(0);
+            char flipped = Character.isUpperCase(first) ? Character.toLowerCase(first) : Character.toUpperCase(first);
+            String alternativo = flipped + trimmed.substring(1);
+            if (codificadorContrasena.coincide(alternativo, hash)) return true;
+        }
+        return false;
     }
 
     /** Un correo mal formado se trata igual que uno inexistente: 401 genérico, no 400. */
